@@ -1,0 +1,10 @@
+<input
+	#searchInput
+	type="search"
+	[value]="term()"
+	(input)="onInput(searchInput.value)"
+	[placeholder]="placeholder()"
+	aria-label="Buscar"
+	autocomplete="off"
+	class="h-10 w-full rounded-md border border-g_bp bg-white px-3 text-sm placeholder:text-gray-400 focus:border-p_bp focus:outline-none"
+/>
