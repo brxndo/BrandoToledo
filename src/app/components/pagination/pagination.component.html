@@ -1,0 +1,23 @@
+@if (totalPages() > 1) {
+	<nav class="flex items-center gap-2 text-sm" aria-label="Paginación">
+		<button
+			type="button"
+			(click)="changePage(currentPage() - 1)"
+			[disabled]="currentPage() === 1"
+			class="h-9 w-9 rounded-md border border-g_bp bg-white text-lg leading-none hover:bg-c_bp disabled:cursor-not-allowed disabled:opacity-40"
+			aria-label="Página anterior"
+		>
+			&lsaquo;
+		</button>
+		<span class="px-1 whitespace-nowrap">{{ currentPage() }} de {{ totalPages() }}</span>
+		<button
+			type="button"
+			(click)="changePage(currentPage() + 1)"
+			[disabled]="currentPage() === totalPages()"
+			class="h-9 w-9 rounded-md border border-g_bp bg-white text-lg leading-none hover:bg-c_bp disabled:cursor-not-allowed disabled:opacity-40"
+			aria-label="Página siguiente"
+		>
+			&rsaquo;
+		</button>
+	</nav>
+}
