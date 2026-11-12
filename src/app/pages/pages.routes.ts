@@ -5,6 +5,9 @@ export const PAGES_ROUTES: Routes = [
 	{
 		path: '',
 		component: LayoutComponent,
-		children: [],
+		children: [
+			{ path: 'products', loadComponent: () => import('./products/products.component').then((m) => m.ProductsComponent) },
+			{ path: '', redirectTo: 'products', pathMatch: 'full' },
+		],
 	},
 ];

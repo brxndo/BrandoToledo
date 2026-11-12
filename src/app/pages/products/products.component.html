@@ -1,0 +1,63 @@
+<div class="rounded-md bg-white p-4 md:p-6">
+	@if (errorMessage()) {
+		<app-alert [message]="errorMessage()">
+			<button type="button" (click)="loadProducts()" class="rounded-md bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-500">Reintentar</button>
+		</app-alert>
+	} @else {
+		<div class="overflow-x-auto" [attr.aria-busy]="loading()">
+			<table class="w-full min-w-[940px] text-left text-sm">
+				<thead class="bg-c_bp text-p_bp">
+					<tr>
+						<th scope="col" class="w-[80px] px-4 py-4 text-center font-semibold">Logo</th>
+						<th scope="col" class="w-[200px] px-4 py-4 font-semibold whitespace-nowrap">Nombre del producto</th>
+						<th scope="col" class="px-4 py-4 font-semibold">
+							<div class="flex items-center gap-2">
+								Descripción
+								<app-info-icon text="Descripción del producto" />
+							</div>
+						</th>
+						<th scope="col" class="w-[180px] px-4 py-4 font-semibold whitespace-nowrap">
+							<div class="flex items-center gap-2">
+								Fecha de liberación
+								<app-info-icon text="Fecha a liberar el producto para los clientes en general" />
+							</div>
+						</th>
+						<th scope="col" class="w-[220px] px-4 py-4 font-semibold whitespace-nowrap">
+							<div class="flex items-center gap-2">
+								Fecha de reestructuración
+								<app-info-icon text="Fecha de revisión del producto para cambiar términos y condiciones" />
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					@if (loading()) {
+						@for (row of skeletonRows; track row) {
+							<tr class="border-b border-gray-200">
+								<td class="px-4 py-3"><div class="mx-auto h-10 w-10 animate-pulse rounded-full bg-gray-200"></div></td>
+								<td class="px-4 py-3"><div class="h-4 w-3/4 animate-pulse rounded bg-gray-200"></div></td>
+								<td class="px-4 py-3"><div class="h-4 w-full animate-pulse rounded bg-gray-200"></div></td>
+								<td class="px-4 py-3"><div class="h-4 w-24 animate-pulse rounded bg-gray-200"></div></td>
+								<td class="px-4 py-3"><div class="h-4 w-24 animate-pulse rounded bg-gray-200"></div></td>
+							</tr>
+						}
+					} @else {
+						@for (product of products(); track product.id) {
+							<tr class="border-b border-gray-200 hover:bg-c_bp">
+								<td class="px-4 py-3 text-center"><app-avatar [src]="product.logo" [name]="product.name" /></td>
+								<td class="px-4 py-3">{{ product.name }}</td>
+								<td class="px-4 py-3">{{ product.description }}</td>
+								<td class="px-4 py-3">{{ product.date_release | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+								<td class="px-4 py-3">{{ product.date_revision | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+							</tr>
+						} @empty {
+							<tr>
+								<td colspan="5" class="px-4 py-10 text-center text-gray-500">Todavía no hay productos registrados</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	}
+</div>
