@@ -155,4 +155,117 @@ describe('ProductsComponent', () => {
 			expect(getRows().length).toBe(2);
 		});
 	});
+
+	describe('cantidad de registros y paginacion', () => {
+		function buildProducts(quantity: number): Product[] {
+			return Array.from({ length: quantity }, (_, index) => ({
+				id: `prod-${index + 1}`,
+				name: `Producto numero ${index + 1}`,
+				description: `Descripcion del producto ${index + 1}`,
+				logo: '',
+				date_release: '2025-01-01',
+				date_revision: '2026-01-01',
+			}));
+		}
+
+		async function loadWith(products: Product[]): Promise<void> {
+			fixture.detectChanges();
+			httpMock.expectOne('/bp/products').flush({ data: products });
+			await fixture.whenStable();
+		}
+
+		async function changeSize(size: number): Promise<void> {
+			const select = element.querySelector('select') as HTMLSelectElement;
+			select.value = String(size);
+			select.dispatchEvent(new Event('change'));
+			await fixture.whenStable();
+		}
+
+		async function clickPage(label: string): Promise<void> {
+			element.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`)?.click();
+			await fixture.whenStable();
+		}
+
+		function getResultsText(): string {
+			return element.querySelector('span.font-medium')?.textContent?.trim() ?? '';
+		}
+
+		it('deberia mostrar cuantos resultados hay en el listado', async () => {
+			await loadWith(PRODUCTS);
+
+			expect(getResultsText()).toBe('2 Resultados');
+		});
+
+		// el select solo puede tener esas tres opciones y arranca en 5 como en el diseño
+		it('deberia tener las opciones 5, 10 y 20 con 5 por defecto', async () => {
+			await loadWith(PRODUCTS);
+
+			const select = element.querySelector('select') as HTMLSelectElement;
+			const options = Array.from(select.options).map((option) => option.value);
+			expect(options).toEqual(['5', '10', '20']);
+			expect(select.value).toBe('5');
+		});
+
+		// si hay mas productos de los que entran, solo se ven los primeros 5 y se avisa cuantos hay en total
+		it('deberia mostrar solo 5 productos al inicio aunque haya mas', async () => {
+			await loadWith(buildProducts(12));
+
+			expect(getRows().length).toBe(5);
+			expect(getResultsText()).toBe('5 de 12 Resultados');
+		});
+
+		it('deberia cambiar la cantidad de filas segun lo que se escoja en el select', async () => {
+			await loadWith(buildProducts(12));
+
+			await changeSize(10);
+			expect(getRows().length).toBe(10);
+			expect(getResultsText()).toBe('10 de 12 Resultados');
+
+			await changeSize(20);
+			expect(getRows().length).toBe(12);
+			expect(getResultsText()).toBe('12 Resultados');
+		});
+
+		it('deberia pasar a la siguiente pagina y volver a la anterior', async () => {
+			await loadWith(buildProducts(12));
+
+			await clickPage('Página siguiente');
+			expect(getRows()[0].textContent).toContain('Producto numero 6');
+
+			await clickPage('Página siguiente');
+			expect(getRows().length).toBe(2);
+			expect(getResultsText()).toBe('2 de 12 Resultados');
+
+			await clickPage('Página anterior');
+			expect(getRows()[0].textContent).toContain('Producto numero 6');
+		});
+
+		// si estaba en la pagina 3 y busca algo que tiene pocos resultados no puede quedarse en una pagina vacia
+		it('deberia volver a la primera pagina cuando se hace una busqueda', async () => {
+			await loadWith(buildProducts(12));
+			await clickPage('Página siguiente');
+			await clickPage('Página siguiente');
+
+			await search('numero 1');
+
+			expect(getRows().length).toBe(4);
+			expect(getRows()[0].textContent).toContain('Producto numero 1');
+		});
+
+		it('deberia volver a la primera pagina cuando se cambia la cantidad de registros', async () => {
+			await loadWith(buildProducts(12));
+			await clickPage('Página siguiente');
+
+			await changeSize(10);
+
+			expect(getRows()[0].textContent).toContain('Producto numero 1');
+		});
+
+		it('deberia decir "1 Resultado" en singular cuando solo hay uno', async () => {
+			await loadWith(PRODUCTS);
+			await search('ahorros');
+
+			expect(getResultsText()).toBe('1 Resultado');
+		});
+	});
 });

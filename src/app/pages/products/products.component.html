@@ -45,7 +45,7 @@
 							</tr>
 						}
 					} @else {
-						@for (product of filteredProducts(); track product.id) {
+						@for (product of pagedProducts(); track product.id) {
 							<tr class="border-b border-gray-200 hover:bg-c_bp">
 								<td class="px-4 py-3 text-center"><app-avatar [src]="product.logo" [name]="product.name" /></td>
 								<td class="px-4 py-3">{{ product.name }}</td>
@@ -67,6 +67,26 @@
 					}
 				</tbody>
 			</table>
+		</div>
+		<div class="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
+			@if (loading()) {
+				<div class="h-4 w-24 animate-pulse rounded bg-gray-200"></div>
+			} @else {
+				<span class="font-medium">{{ resultsLabel() }}</span>
+			}
+			<div class="flex items-center gap-3">
+				<app-pagination [totalItems]="filteredProducts().length" [itemsPerPage]="pagesQuantity()" [currentPage]="currentPage()" (pageChange)="changePage($event)" />
+				<select
+					#sizeSelect
+					(change)="changePagesQuantity(+sizeSelect.value)"
+					aria-label="Cantidad de registros a mostrar"
+					class="h-9 rounded-md border border-g_bp bg-white px-2 text-sm focus:border-p_bp focus:outline-none"
+				>
+					@for (size of pageSizes; track size) {
+						<option [value]="size" [selected]="size === pagesQuantity()">{{ size }}</option>
+					}
+				</select>
+			</div>
 		</div>
 	}
 </div>
