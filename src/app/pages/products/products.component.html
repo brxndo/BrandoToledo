@@ -1,3 +1,6 @@
+<div class="mb-4 flex">
+	<app-search-box class="block w-full sm:w-[220px]" placeholder="Search..." [term]="searchTerm()" (termChange)="changeTerm($event)" />
+</div>
 <div class="rounded-md bg-white p-4 md:p-6">
 	@if (errorMessage()) {
 		<app-alert [message]="errorMessage()">
@@ -42,7 +45,7 @@
 							</tr>
 						}
 					} @else {
-						@for (product of products(); track product.id) {
+						@for (product of filteredProducts(); track product.id) {
 							<tr class="border-b border-gray-200 hover:bg-c_bp">
 								<td class="px-4 py-3 text-center"><app-avatar [src]="product.logo" [name]="product.name" /></td>
 								<td class="px-4 py-3">{{ product.name }}</td>
@@ -52,7 +55,13 @@
 							</tr>
 						} @empty {
 							<tr>
-								<td colspan="5" class="px-4 py-10 text-center text-gray-500">Todavía no hay productos registrados</td>
+								<td colspan="5" class="px-4 py-10 text-gray-500 md:text-center">
+									@if (searchTerm()) {
+										No se encontraron productos con "{{ searchTerm() }}"
+									} @else {
+										Todavía no hay productos registrados
+									}
+								</td>
 							</tr>
 						}
 					}

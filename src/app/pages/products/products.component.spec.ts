@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { Product } from '../../interfaces/products.interface';
 import { ProductsComponent } from './products.component';
 
@@ -31,6 +32,11 @@ describe('ProductsComponent', () => {
 
 	function getRows(): HTMLTableRowElement[] {
 		return Array.from(element.querySelectorAll('tbody tr'));
+	}
+
+	async function search(term: string): Promise<void> {
+		fixture.debugElement.query(By.css('app-search-box')).triggerEventHandler('termChange', term);
+		await fixture.whenStable();
 	}
 
 	// mientras el back no responde se ven las filas grises de carga y no una tabla vacia
@@ -101,5 +107,52 @@ describe('ProductsComponent', () => {
 
 		expect(element.querySelector('[role="alert"]')).toBeNull();
 		expect(getRows().length).toBe(2);
+	});
+
+	describe('busqueda', () => {
+		beforeEach(async () => {
+			fixture.detectChanges();
+			httpMock.expectOne('/bp/products').flush({ data: PRODUCTS });
+			await fixture.whenStable();
+		});
+
+		it('deberia mostrar la caja de busqueda arriba del listado', () => {
+			const input = element.querySelector<HTMLInputElement>('app-search-box input');
+
+			expect(input).not.toBeNull();
+			expect(input?.placeholder).toBe('Search...');
+		});
+
+		// al buscar solo quedan en la tabla los productos que coinciden con lo escrito
+		it('deberia dejar solo los productos que coinciden con la busqueda', async () => {
+			await search('ahorros');
+
+			const rows = getRows();
+			expect(rows.length).toBe(1);
+			expect(rows[0].textContent).toContain('Cuenta de Ahorros');
+		});
+
+		it('deberia encontrar productos por la descripcion sin importar las tildes', async () => {
+			await search('modalidad de credito');
+
+			const rows = getRows();
+			expect(rows.length).toBe(1);
+			expect(rows[0].textContent).toContain('Tarjetas de Crédito');
+		});
+
+		// si no hay coincidencias se le dice al usuario que fue lo que busco, para que no piense que se daño algo
+		it('deberia avisar cuando la busqueda no encuentra nada', async () => {
+			await search('seguro de vida');
+
+			expect(getRows().length).toBe(1);
+			expect(element.querySelector('tbody')?.textContent).toContain('No se encontraron productos con "seguro de vida"');
+		});
+
+		it('deberia volver a mostrar todo cuando se borra la busqueda', async () => {
+			await search('ahorros');
+			await search('');
+
+			expect(getRows().length).toBe(2);
+		});
 	});
 });
