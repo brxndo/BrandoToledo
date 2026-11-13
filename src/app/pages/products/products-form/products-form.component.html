@@ -1,0 +1,87 @@
+<div class="mx-auto max-w-3xl rounded-md bg-white">
+	<h1 class="border-b border-gray-300 px-6 py-6 text-center text-2xl font-semibold md:text-3xl">Formulario de Registro</h1>
+	<form [formGroup]="form" (ngSubmit)="saveProduct()" class="px-6 pt-6 pb-10 md:px-12" novalidate>
+		@if (errorMessage()) {
+			<app-alert class="mb-5 block" [message]="errorMessage()" />
+		}
+		<div class="grid grid-cols-1 gap-x-8 gap-y-4 md:grid-cols-2">
+			<app-form-field label="ID" forId="id" [error]="getError('id')">
+				<input
+					id="id"
+					type="text"
+					formControlName="id"
+					class="h-11 w-full rounded-md border bg-white px-3 text-sm focus:ring-1 focus:ring-p_bp focus:outline-none"
+					[class]="getError('id') ? 'border-red-500' : 'border-g_bp'"
+					placeholder="trj-crd"
+					autocomplete="off"
+				/>
+				@if (verifyingId()) {
+					<small class="mt-1 text-xs text-gray-500">Verificando ID...</small>
+				}
+			</app-form-field>
+			<app-form-field label="Nombre" forId="name" [error]="getError('name')">
+				<input
+					id="name"
+					type="text"
+					formControlName="name"
+					class="h-11 w-full rounded-md border bg-white px-3 text-sm focus:ring-1 focus:ring-p_bp focus:outline-none"
+					[class]="getError('name') ? 'border-red-500' : 'border-g_bp'"
+					placeholder="Tarjetas de Crédito"
+					autocomplete="off"
+				/>
+			</app-form-field>
+			<app-form-field label="Descripción" forId="description" [error]="getError('description')">
+				<input
+					id="description"
+					type="text"
+					formControlName="description"
+					class="h-11 w-full rounded-md border bg-white px-3 text-sm focus:ring-1 focus:ring-p_bp focus:outline-none"
+					[class]="getError('description') ? 'border-red-500' : 'border-g_bp'"
+					placeholder="Tarjeta de consumo bajo la modalidad de crédito"
+					autocomplete="off"
+				/>
+			</app-form-field>
+			<app-form-field label="Logo" forId="logo" [error]="getError('logo')">
+				<input
+					id="logo"
+					type="text"
+					formControlName="logo"
+					class="h-11 w-full rounded-md border bg-white px-3 text-sm focus:ring-1 focus:ring-p_bp focus:outline-none"
+					[class]="getError('logo') ? 'border-red-500' : 'border-g_bp'"
+					placeholder="https://www.banco.com/logo.png"
+					autocomplete="off"
+				/>
+			</app-form-field>
+			<app-form-field label="Fecha Liberación" forId="date_release" [error]="getError('date_release')">
+				<input
+					id="date_release"
+					type="date"
+					formControlName="date_release"
+					[min]="today"
+					class="h-11 w-full rounded-md border bg-white px-3 text-sm focus:ring-1 focus:ring-p_bp focus:outline-none"
+					[class]="getError('date_release') ? 'border-red-500' : 'border-g_bp'"
+				/>
+			</app-form-field>
+			<app-form-field label="Fecha Revisión" forId="date_revision" [error]="getError('date_revision')" [muted]="true">
+				<input
+					id="date_revision"
+					type="date"
+					formControlName="date_revision"
+					readonly
+					class="h-11 w-full cursor-not-allowed rounded-md border bg-gray-100 px-3 text-sm text-gray-500 focus:outline-none"
+					[class]="getError('date_revision') ? 'border-red-500' : 'border-gray-200'"
+				/>
+			</app-form-field>
+		</div>
+		<div class="mt-10 flex flex-wrap justify-center gap-4 md:gap-10">
+			<button type="button" (click)="resetForm()" class="h-12 w-32 rounded-md bg-s_bp text-sm font-bold text-p_bp hover:bg-s_bp_h">Reiniciar</button>
+			<button
+				type="submit"
+				[disabled]="saving() || verifyingId() || form.invalid"
+				class="h-12 w-32 rounded-md bg-a_bp text-sm font-bold text-p_bp hover:bg-a_bp_h disabled:cursor-not-allowed disabled:opacity-50"
+			>
+				{{ saving() ? 'Guardando...' : 'Enviar' }}
+			</button>
+		</div>
+	</form>
+</div>
