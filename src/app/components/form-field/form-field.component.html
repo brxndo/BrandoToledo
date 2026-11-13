@@ -1,0 +1,5 @@
+<label [for]="forId()" class="mb-2 text-sm font-bold" [class.text-gray-400]="muted()">{{ label() }}</label>
+<ng-content />
+@if (error()) {
+	<small class="mt-1 text-xs text-red-600" aria-live="polite">{{ error() }}</small>
+}
