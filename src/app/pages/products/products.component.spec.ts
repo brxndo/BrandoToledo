@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
 import { Product } from '../../interfaces/products.interface';
 import { ProductsComponent } from './products.component';
 
@@ -18,7 +19,7 @@ describe('ProductsComponent', () => {
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
 			imports: [ProductsComponent],
-			providers: [provideHttpClient(), provideHttpClientTesting()],
+			providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
 		}).compileComponents();
 
 		fixture = TestBed.createComponent(ProductsComponent);
@@ -109,6 +110,16 @@ describe('ProductsComponent', () => {
 		expect(getRows().length).toBe(2);
 	});
 
+	// el boton amarillo de arriba lleva al formulario de registro
+	it('deberia tener el boton de agregar que lleva al formulario', async () => {
+		fixture.detectChanges();
+		httpMock.expectOne('/bp/products').flush({ data: PRODUCTS });
+		await fixture.whenStable();
+
+		const link = Array.from(element.querySelectorAll('a')).find((a) => a.textContent?.trim() === 'Agregar');
+		expect(link?.getAttribute('href')).toBe('/products/new');
+	});
+
 	describe('busqueda', () => {
 		beforeEach(async () => {
 			fixture.detectChanges();
@@ -120,7 +131,7 @@ describe('ProductsComponent', () => {
 			const input = element.querySelector<HTMLInputElement>('app-search-box input');
 
 			expect(input).not.toBeNull();
-			expect(input?.placeholder).toBe('Search...');
+			expect(input?.placeholder).toBe('Buscar...');
 		});
 
 		// al buscar solo quedan en la tabla los productos que coinciden con lo escrito

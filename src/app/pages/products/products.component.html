@@ -1,5 +1,6 @@
-<div class="mb-4 flex">
-	<app-search-box class="block w-full sm:w-[220px]" placeholder="Search..." [term]="searchTerm()" (termChange)="changeTerm($event)" />
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+	<app-search-box class="block w-full sm:w-[220px]" placeholder="Buscar..." [term]="searchTerm()" (termChange)="changeTerm($event)" />
+	<a routerLink="/products/new" class="flex h-11 w-full items-center justify-center rounded-md bg-a_bp px-6 text-sm font-bold text-p_bp hover:bg-a_bp_h sm:w-auto">Agregar</a>
 </div>
 <div class="rounded-md bg-white p-4 md:p-6">
 	@if (errorMessage()) {

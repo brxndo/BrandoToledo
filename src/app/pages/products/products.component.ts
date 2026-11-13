@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AlertComponent } from '../../components/alert/alert.component';
 import { AvatarComponent } from '../../components/avatar/avatar.component';
 import { InfoIconComponent } from '../../components/info-icon/info-icon.component';
@@ -12,7 +13,7 @@ import { ProductsService } from '../../services/products.service';
 
 @Component({
 	selector: 'app-products',
-	imports: [DatePipe, AlertComponent, AvatarComponent, InfoIconComponent, PaginationComponent, SearchBoxComponent],
+	imports: [DatePipe, RouterLink, AlertComponent, AvatarComponent, InfoIconComponent, PaginationComponent, SearchBoxComponent],
 	templateUrl: './products.component.html',
 })
 export class ProductsComponent implements OnInit {

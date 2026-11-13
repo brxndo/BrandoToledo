@@ -48,11 +48,11 @@ describe('SearchBoxComponent', () => {
 	});
 
 	it('deberia mostrar el placeholder y el texto inicial que le pasen', () => {
-		fixture.componentRef.setInput('placeholder', 'Search...');
+		fixture.componentRef.setInput('placeholder', 'Buscar...');
 		fixture.componentRef.setInput('term', 'ahorros');
 		fixture.detectChanges();
 
-		expect(input.placeholder).toBe('Search...');
+		expect(input.placeholder).toBe('Buscar...');
 		expect(input.value).toBe('ahorros');
 	});
 });
