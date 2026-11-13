@@ -12,3 +12,11 @@ export interface Product {
 export interface SearchProducts extends ApiResponse {
 	data: Product[];
 }
+
+export interface ProductResponse extends ApiResponse {
+	data?: Product;
+}
+
+export interface ProductVerification extends ApiResponse {
+	exists?: boolean;
+}

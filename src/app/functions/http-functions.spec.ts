@@ -42,6 +42,15 @@ describe('http-functions', () => {
 			expect(getErrorMessage(new HttpErrorResponse({ status: 404 }))).toBe('No se encontró el recurso solicitado');
 		});
 
+		// el back responde en ingles, estos dos mensajes si los conocemos y se muestran en español
+		it('deberia traducir los mensajes conocidos del back', () => {
+			const duplicated = new HttpErrorResponse({ status: 400, error: { name: 'BadRequestError', message: 'Duplicate identifier found in the database' } });
+			const notFound = new HttpErrorResponse({ status: 404, error: { name: 'NotFoundError', message: 'Not product found with that identifier' } });
+
+			expect(getErrorMessage(duplicated)).toBe('Ya existe un producto con ese ID');
+			expect(getErrorMessage(notFound)).toBe('No se encontró un producto con ese ID');
+		});
+
 		// para cualquier otro codigo que no tengamos mapeado
 		it('deberia usar un mensaje generico si no conoce el status', () => {
 			expect(getErrorMessage(new HttpErrorResponse({ status: 418 }))).toBe('Ocurrió un error inesperado');

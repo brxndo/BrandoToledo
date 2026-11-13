@@ -14,9 +14,14 @@ const ERROR_MESSAGES: Record<number, string> = {
 	500: 'Ocurrió un error en el servidor',
 };
 
+const BACKEND_MESSAGES: Record<string, string> = {
+	'Duplicate identifier found in the database': 'Ya existe un producto con ese ID',
+	'Not product found with that identifier': 'No se encontró un producto con ese ID',
+};
+
 export function getErrorMessage(error: HttpErrorResponse): string {
 	if (NO_CONNECTION_STATUS.includes(error.status)) return 'Sin conexión con el servidor';
-	return ERROR_MESSAGES[error.status] ?? 'Ocurrió un error inesperado';
+	return BACKEND_MESSAGES[error.error?.message] ?? ERROR_MESSAGES[error.status] ?? 'Ocurrió un error inesperado';
 }
 
 export function toApiResponse<T extends ApiResponse>(): OperatorFunction<T, T> {
