@@ -1,4 +1,4 @@
-import { addOneYear, getToday, toInputDate } from './date-functions';
+import { addOneYear, getToday, toDateOnly, toInputDate } from './date-functions';
 
 describe('date-functions', () => {
 	describe('toInputDate', () => {
@@ -6,6 +6,18 @@ describe('date-functions', () => {
 		it('deberia convertir una fecha al formato de los input date', () => {
 			expect(toInputDate(new Date(2026, 0, 5))).toBe('2026-01-05');
 			expect(toInputDate(new Date(2026, 10, 12))).toBe('2026-11-12');
+		});
+	});
+
+	describe('toDateOnly', () => {
+		// el back a veces devuelve la fecha sola y a veces con la hora, para el formulario solo sirve la fecha
+		it('deberia quedarse solo con la parte de la fecha', () => {
+			expect(toDateOnly('2026-11-12')).toBe('2026-11-12');
+			expect(toDateOnly('2026-11-12T00:00:00.000Z')).toBe('2026-11-12');
+		});
+
+		it('deberia aceptar tambien un objeto Date', () => {
+			expect(toDateOnly(new Date('2026-11-12T00:00:00.000Z'))).toBe('2026-11-12');
 		});
 	});
 

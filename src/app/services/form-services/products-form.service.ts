@@ -1,6 +1,7 @@
 import { Service } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { addOneYear, toDateOnly } from '../../functions/date-functions';
 import { oneYearAfterValidator, todayOrLaterValidator, uniqueIdValidator } from '../../functions/validators-functions';
 import { Product, ProductVerification } from '../../interfaces/products.interface';
 
@@ -43,8 +44,21 @@ export class ProductsFormService {
 		);
 	}
 
+	loadProductInForm(form: ProductForm, product: Product): void {
+		const date_release = toDateOnly(product.date_release);
+		form.controls.id.disable();
+		form.reset({ ...product, date_release, date_revision: addOneYear(date_release) });
+		form.markAllAsTouched();
+	}
+
 	buildProductToSend(form: ProductForm): Product {
 		return form.getRawValue();
+	}
+
+	buildChangesToSend(form: ProductForm): Partial<Product> {
+		const changes: Partial<Product> = form.getRawValue();
+		delete changes.id;
+		return changes;
 	}
 
 	getProductFieldError(form: ProductForm, field: keyof Product): string {

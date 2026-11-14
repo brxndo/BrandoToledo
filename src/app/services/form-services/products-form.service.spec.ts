@@ -1,5 +1,5 @@
 import { of } from 'rxjs';
-import { ProductVerification } from '../../interfaces/products.interface';
+import { Product, ProductVerification } from '../../interfaces/products.interface';
 import { ProductForm, ProductsFormService } from './products-form.service';
 
 describe('ProductsFormService', () => {
@@ -90,6 +90,60 @@ describe('ProductsFormService', () => {
 
 			expect(form.hasError('oneYearAfter')).toBe(true);
 			expect(form.valid).toBe(false);
+		});
+	});
+
+	describe('loadProductInForm', () => {
+		const product: Product = {
+			id: 'trj-crd',
+			name: 'Tarjetas de Crédito',
+			description: 'Tarjeta de consumo bajo la modalidad de crédito',
+			logo: 'https://www.assets.com/1.png',
+			date_release: '2026-12-01T00:00:00.000Z',
+			date_revision: '2027-12-01T00:00:00.000Z',
+		};
+
+		// las fechas pueden venir con hora desde el back, en el formulario se dejan solo como fecha
+		it('deberia cargar los datos del producto en el formulario', () => {
+			service.loadProductInForm(form, product);
+
+			expect(form.getRawValue()).toEqual({ ...product, date_release: '2026-12-01', date_revision: '2027-12-01' });
+			expect(form.valid).toBe(true);
+		});
+
+		// al editar el id queda bloqueado, y como ese id ya existe (es el del mismo producto) no se debe consultar al back
+		it('deberia bloquear el id sin volver a verificarlo', () => {
+			const verifyId = jest.fn(() => of({ ok: true, exists: true }));
+			const editForm = service.createEmptyProductForm(verifyId);
+
+			service.loadProductInForm(editForm, product);
+			jest.advanceTimersByTime(400);
+
+			expect(editForm.controls.id.disabled).toBe(true);
+			expect(verifyId).not.toHaveBeenCalled();
+			expect(service.getProductFieldError(editForm, 'id')).toBe('');
+		});
+
+		// asi los errores que ya traiga el producto (como una fecha vencida) se ven sin tener que tocar el campo
+		it('deberia dejar los campos como tocados para que se vean los errores', () => {
+			service.loadProductInForm(form, { ...product, date_release: '2025-01-01' });
+
+			expect(service.getProductFieldError(form, 'date_release')).toBe('La fecha debe ser igual o mayor a la fecha actual');
+		});
+	});
+
+	describe('buildChangesToSend', () => {
+		// en el PUT el id va en la url, por eso se saca del cuerpo
+		it('deberia armar los cambios sin el id', () => {
+			fillValidForm();
+
+			expect(service.buildChangesToSend(form)).toEqual({
+				name: 'Tarjetas de Crédito',
+				description: 'Tarjeta de consumo bajo la modalidad de crédito',
+				logo: 'https://www.assets.com/1.png',
+				date_release: '2026-11-12',
+				date_revision: '2027-11-12',
+			});
 		});
 	});
 

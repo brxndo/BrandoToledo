@@ -6,6 +6,11 @@ export function toInputDate(date: Date): string {
 	return `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+export function toDateOnly(date: Date | string): string {
+	const value = typeof date === 'string' ? date : date.toISOString();
+	return value.substring(0, 10);
+}
+
 export function getToday(): string {
 	return toInputDate(new Date());
 }
