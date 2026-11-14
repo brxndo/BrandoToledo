@@ -1,0 +1,27 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+	<div role="dialog" aria-modal="true" aria-labelledby="confirm-modal-message" class="w-full max-w-lg rounded-lg bg-white shadow-xl">
+		<p id="confirm-modal-message" class="px-6 pt-10 pb-12 text-lg md:px-10">{{ message() }}</p>
+		@if (errorMessage()) {
+			<app-alert class="mx-6 mb-6 block md:mx-10" [message]="errorMessage()" />
+		}
+		<div class="flex flex-col-reverse gap-3 border-t border-gray-200 px-6 py-6 sm:flex-row sm:gap-4 md:px-10">
+			<button
+				#cancelButton
+				type="button"
+				(click)="cancel()"
+				[disabled]="loading()"
+				class="h-12 w-full rounded-md bg-s_bp text-sm font-bold text-p_bp hover:bg-s_bp_h disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
+			>
+				Cancelar
+			</button>
+			<button
+				type="button"
+				(click)="confirmed.emit()"
+				[disabled]="loading()"
+				class="h-12 w-full rounded-md bg-a_bp text-sm font-bold text-p_bp hover:bg-a_bp_h disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1"
+			>
+				{{ loading() ? loadingText() : confirmText() }}
+			</button>
+		</div>
+	</div>
+</div>
