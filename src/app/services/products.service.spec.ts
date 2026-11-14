@@ -117,4 +117,69 @@ describe('ProductsService', () => {
 
 		httpMock.expectOne('/bp/products/verification/a%20b%2Fc').flush(false);
 	});
+
+	// para editar se pide un solo producto, el back lo devuelve suelto y aqui se lo deja dentro de data
+	it('deberia traer un producto por su id', () => {
+		let resp: ProductResponse | undefined;
+		service.getProductById('trj-crd').subscribe((r) => (resp = r));
+
+		const req = httpMock.expectOne('/bp/products/trj-crd');
+		expect(req.request.method).toBe('GET');
+		req.flush(PRODUCTS[0]);
+
+		expect(resp?.ok).toBe(true);
+		expect(resp?.data?.name).toBe('Tarjetas de Crédito');
+	});
+
+	it('deberia avisar si el producto que se busca no existe', () => {
+		let resp: ProductResponse | undefined;
+		service.getProductById('no-existe').subscribe((r) => (resp = r));
+
+		httpMock.expectOne('/bp/products/no-existe').flush({ name: 'NotFoundError', message: 'Not product found with that identifier' }, { status: 404, statusText: 'Not Found' });
+
+		expect(resp?.ok).toBe(false);
+		expect(resp?.message).toBe('No se encontró un producto con ese ID');
+	});
+
+	// al actualizar el id va en la url y en el cuerpo solo los datos que se pueden cambiar
+	it('deberia actualizar un producto', () => {
+		const changes = {
+			name: 'Tarjeta Black',
+			description: 'Tarjeta de crédito sin límite de consumo',
+			logo: 'https://www.assets.com/3.png',
+			date_release: '2026-12-01',
+			date_revision: '2027-12-01',
+		};
+		let resp: ProductResponse | undefined;
+		service.updateProduct('trj-crd', changes).subscribe((r) => (resp = r));
+
+		const req = httpMock.expectOne('/bp/products/trj-crd');
+		expect(req.request.method).toBe('PUT');
+		expect(req.request.body).toEqual(changes);
+		req.flush({ message: 'Product updated successfully', data: changes });
+
+		expect(resp?.ok).toBe(true);
+	});
+
+	it('deberia eliminar un producto', () => {
+		let resp: ProductResponse | undefined;
+		service.deleteProduct('trj-crd').subscribe((r) => (resp = r));
+
+		const req = httpMock.expectOne('/bp/products/trj-crd');
+		expect(req.request.method).toBe('DELETE');
+		req.flush({ message: 'Product removed successfully' });
+
+		expect(resp?.ok).toBe(true);
+	});
+
+	// puede pasar que alguien mas ya lo haya borrado, el back responde 404 y se muestra el motivo
+	it('deberia avisar si el producto a eliminar ya no existe', () => {
+		let resp: ProductResponse | undefined;
+		service.deleteProduct('trj-crd').subscribe((r) => (resp = r));
+
+		httpMock.expectOne('/bp/products/trj-crd').flush({ name: 'NotFoundError', message: 'Not product found with that identifier' }, { status: 404, statusText: 'Not Found' });
+
+		expect(resp?.ok).toBe(false);
+		expect(resp?.message).toBe('No se encontró un producto con ese ID');
+	});
 });

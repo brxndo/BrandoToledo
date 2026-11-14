@@ -14,8 +14,23 @@ export class ProductsService {
 		return this.http.get<SearchProducts>(this.baseUrl).pipe(toApiResponse());
 	}
 
+	getProductById(id: string) {
+		return this.http.get<Product>(this.getProductUrl(id)).pipe(
+			map((data): ProductResponse => ({ ok: true, data })),
+			toApiResponse()
+		);
+	}
+
 	createProduct(product: Product) {
 		return this.http.post<ProductResponse>(this.baseUrl, product).pipe(toApiResponse());
+	}
+
+	updateProduct(id: string, changes: Partial<Product>) {
+		return this.http.put<ProductResponse>(this.getProductUrl(id), changes).pipe(toApiResponse());
+	}
+
+	deleteProduct(id: string) {
+		return this.http.delete<ProductResponse>(this.getProductUrl(id)).pipe(toApiResponse());
 	}
 
 	verifyProductId(id: string) {
@@ -23,5 +38,9 @@ export class ProductsService {
 			map((exists): ProductVerification => ({ ok: true, exists })),
 			toApiResponse()
 		);
+	}
+
+	private getProductUrl(id: string): string {
+		return `${this.baseUrl}/${encodeURIComponent(id)}`;
 	}
 }
