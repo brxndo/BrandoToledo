@@ -1,0 +1,26 @@
+<button
+	#trigger
+	type="button"
+	(click)="toggle()"
+	class="flex h-8 w-8 items-center justify-center rounded-full text-gray-600 hover:bg-s_bp"
+	aria-haspopup="menu"
+	[attr.aria-expanded]="open()"
+	[attr.aria-label]="label()"
+>
+	<svg viewBox="0 0 4 16" fill="currentColor" class="h-4 w-1" aria-hidden="true">
+		<circle cx="2" cy="2" r="2" />
+		<circle cx="2" cy="8" r="2" />
+		<circle cx="2" cy="14" r="2" />
+	</svg>
+</button>
+@if (open()) {
+	<div
+		role="menu"
+		class="fixed z-40 min-w-[140px] overflow-hidden rounded-md border border-gray-200 bg-white py-1 text-left text-sm shadow-lg"
+		[style.top.px]="position().top"
+		[style.bottom.px]="position().bottom"
+		[style.right.px]="position().right"
+	>
+		<ng-content />
+	</div>
+}
