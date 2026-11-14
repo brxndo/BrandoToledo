@@ -9,7 +9,7 @@
 		</app-alert>
 	} @else {
 		<div class="overflow-x-auto" [attr.aria-busy]="loading()">
-			<table class="w-full min-w-[940px] text-left text-sm">
+			<table class="w-full min-w-[1000px] text-left text-sm">
 				<thead class="bg-c_bp text-p_bp">
 					<tr>
 						<th scope="col" class="w-[80px] px-4 py-4 text-center font-semibold">Logo</th>
@@ -32,6 +32,7 @@
 								<app-info-icon text="Fecha de revisión del producto para cambiar términos y condiciones" />
 							</div>
 						</th>
+						<th scope="col" class="w-[60px] px-2 py-4" aria-label="Opciones"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -43,6 +44,7 @@
 								<td class="px-4 py-3"><div class="h-4 w-full animate-pulse rounded bg-gray-200"></div></td>
 								<td class="px-4 py-3"><div class="h-4 w-24 animate-pulse rounded bg-gray-200"></div></td>
 								<td class="px-4 py-3"><div class="h-4 w-24 animate-pulse rounded bg-gray-200"></div></td>
+								<td class="px-2 py-3"><div class="mx-auto h-6 w-2 animate-pulse rounded bg-gray-200"></div></td>
 							</tr>
 						}
 					} @else {
@@ -53,10 +55,16 @@
 								<td class="px-4 py-3">{{ product.description }}</td>
 								<td class="px-4 py-3">{{ product.date_release | date: 'dd/MM/yyyy' : 'UTC' }}</td>
 								<td class="px-4 py-3">{{ product.date_revision | date: 'dd/MM/yyyy' : 'UTC' }}</td>
+								<td class="px-2 py-3 text-center">
+									<app-dropdown-menu [label]="'Opciones de ' + product.name">
+										<a role="menuitem" [routerLink]="['/products/edit', product.id]" class="block w-full px-4 py-2 text-left hover:bg-c_bp">Editar</a>
+										<button type="button" role="menuitem" (click)="deleteProduct(product)" class="block w-full px-4 py-2 text-left text-red-600 hover:bg-c_bp">Eliminar</button>
+									</app-dropdown-menu>
+								</td>
 							</tr>
 						} @empty {
 							<tr>
-								<td colspan="5" class="px-4 py-10 text-gray-500 md:text-center">
+								<td colspan="6" class="px-4 py-10 text-gray-500 md:text-center">
 									@if (searchTerm()) {
 										No se encontraron productos con "{{ searchTerm() }}"
 									} @else {
@@ -91,3 +99,13 @@
 		</div>
 	}
 </div>
+@if (productToDelete(); as product) {
+	<app-confirm-modal
+		[message]="'¿Estás seguro de eliminar el producto ' + product.name + '?'"
+		loadingText="Eliminando..."
+		[loading]="deleting()"
+		[errorMessage]="deleteError()"
+		(confirmed)="confirmDelete()"
+		(cancelled)="cancelDelete()"
+	/>
+}

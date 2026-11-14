@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { Product } from '../../interfaces/products.interface';
+import { ToastService } from '../../services/toast.service';
 import { ProductsComponent } from './products.component';
 
 const PRODUCTS: Product[] = [
@@ -165,6 +166,149 @@ describe('ProductsComponent', () => {
 
 			expect(getRows().length).toBe(2);
 		});
+	});
+
+	describe('menu de opciones', () => {
+		beforeEach(async () => {
+			fixture.detectChanges();
+			httpMock.expectOne('/bp/products').flush({ data: PRODUCTS });
+			await fixture.whenStable();
+		});
+
+		afterEach(() => {
+			TestBed.inject(ToastService).close();
+		});
+
+		async function openMenu(rowIndex: number): Promise<void> {
+			getRows()[rowIndex].querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')?.click();
+			await fixture.whenStable();
+		}
+
+		function getMenuItem(text: string): HTMLElement {
+			return Array.from(element.querySelectorAll<HTMLElement>('[role="menuitem"]')).find((item) => item.textContent?.trim() === text) as HTMLElement;
+		}
+
+		function getModal(): HTMLElement | null {
+			return element.querySelector('[role="dialog"]');
+		}
+
+		function getModalButton(text: string): HTMLButtonElement {
+			return Array.from(getModal()?.querySelectorAll('button') ?? []).find((button) => button.textContent?.includes(text)) as HTMLButtonElement;
+		}
+
+		async function askToDelete(rowIndex: number): Promise<void> {
+			await openMenu(rowIndex);
+			getMenuItem('Eliminar').click();
+			await fixture.whenStable();
+		}
+
+		// cada fila tiene sus tres puntos con las dos opciones
+		it('deberia mostrar las opciones de editar y eliminar en cada producto', async () => {
+			expect(element.querySelectorAll('tbody button[aria-haspopup="menu"]').length).toBe(2);
+
+			await openMenu(0);
+
+			expect(getMenuItem('Editar')).toBeTruthy();
+			expect(getMenuItem('Eliminar')).toBeTruthy();
+		});
+
+		it('deberia llevar a la pantalla de edicion del producto escogido', async () => {
+			await openMenu(1);
+
+			expect(getMenuItem('Editar').getAttribute('href')).toBe('/products/edit/cta-aho');
+		});
+
+		// antes de borrar se pregunta, con el nombre del producto para que no haya confusiones
+		it('deberia mostrar el modal de confirmacion al escoger eliminar', async () => {
+			await askToDelete(0);
+
+			expect(getModal()?.textContent).toContain('¿Estás seguro de eliminar el producto Tarjetas de Crédito?');
+			expect(getModalButton('Cancelar')).toBeTruthy();
+			expect(getModalButton('Confirmar')).toBeTruthy();
+			httpMock.expectNone('/bp/products/trj-crd');
+		});
+
+		it('deberia solo ocultar el modal al cancelar', async () => {
+			await askToDelete(0);
+
+			getModalButton('Cancelar').click();
+			await fixture.whenStable();
+
+			expect(getModal()).toBeNull();
+			expect(getRows().length).toBe(2);
+			httpMock.expectNone('/bp/products/trj-crd');
+		});
+
+		it('deberia eliminar el producto al confirmar y quitarlo del listado', async () => {
+			await askToDelete(0);
+
+			getModalButton('Confirmar').click();
+			fixture.detectChanges();
+			const req = httpMock.expectOne('/bp/products/trj-crd');
+			expect(req.request.method).toBe('DELETE');
+			expect(getModalButton('Eliminando...').disabled).toBe(true);
+			req.flush({ message: 'Product removed successfully' });
+			await fixture.whenStable();
+
+			expect(getModal()).toBeNull();
+			expect(getRows().length).toBe(1);
+			expect(getRows()[0].textContent).toContain('Cuenta de Ahorros');
+			expect(element.textContent).toContain('1 Resultado');
+			expect(TestBed.inject(ToastService).toast()).toEqual({ message: 'Producto eliminado correctamente', type: 'success' });
+		});
+
+		// si el back falla el modal se queda abierto mostrando el motivo y el producto sigue en la tabla
+		it('deberia mostrar el error en el modal si no se pudo eliminar', async () => {
+			await askToDelete(0);
+
+			getModalButton('Confirmar').click();
+			httpMock.expectOne('/bp/products/trj-crd').flush('', { status: 502, statusText: 'Bad Gateway' });
+			await fixture.whenStable();
+
+			expect(getModal()?.querySelector('[role="alert"]')?.textContent).toContain('Sin conexión con el servidor');
+			expect(getRows().length).toBe(2);
+			expect(getModalButton('Confirmar').disabled).toBe(false);
+		});
+
+		it('deberia limpiar el error anterior al volver a abrir el modal', async () => {
+			await askToDelete(0);
+			getModalButton('Confirmar').click();
+			httpMock.expectOne('/bp/products/trj-crd').flush('', { status: 502, statusText: 'Bad Gateway' });
+			await fixture.whenStable();
+			getModalButton('Cancelar').click();
+			await fixture.whenStable();
+
+			await askToDelete(1);
+
+			expect(getModal()?.querySelector('[role="alert"]')).toBeNull();
+			expect(getModal()?.textContent).toContain('Cuenta de Ahorros');
+		});
+	});
+
+	// si se borra el unico producto que quedaba en la ultima pagina, no puede quedarse viendo una pagina vacia
+	it('deberia regresar a la pagina anterior si se elimina el ultimo producto de la pagina', async () => {
+		const products = Array.from({ length: 6 }, (_, index) => ({ ...PRODUCTS[0], id: `prod-${index + 1}`, name: `Producto numero ${index + 1}` }));
+		fixture.detectChanges();
+		httpMock.expectOne('/bp/products').flush({ data: products });
+		await fixture.whenStable();
+		element.querySelector<HTMLButtonElement>('button[aria-label="Página siguiente"]')?.click();
+		await fixture.whenStable();
+
+		getRows()[0].querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')?.click();
+		await fixture.whenStable();
+		Array.from(element.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+			.find((item) => item.textContent?.trim() === 'Eliminar')
+			?.click();
+		await fixture.whenStable();
+		Array.from(element.querySelectorAll<HTMLButtonElement>('[role="dialog"] button'))
+			.find((button) => button.textContent?.includes('Confirmar'))
+			?.click();
+		httpMock.expectOne('/bp/products/prod-6').flush({ message: 'Product removed successfully' });
+		await fixture.whenStable();
+
+		expect(getRows().length).toBe(5);
+		expect(getRows()[0].textContent).toContain('Producto numero 1');
+		TestBed.inject(ToastService).close();
 	});
 
 	describe('cantidad de registros y paginacion', () => {
